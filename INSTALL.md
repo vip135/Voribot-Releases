@@ -1,6 +1,6 @@
 # Voribot 两句话安装与使用
 
-Copyright 2026 GuoShilei. 固定版本：0.0.9-dev，Windows x64。
+Copyright 2026 GuoShilei. 固定版本：0.0.9-dev.1，Windows x64。
 
 状态：公开发行候选，采用 Voribot Research and Commercial License 1.0：个人非商业研究免费，商用须书面授权。资产未上传且匿名链路未验证前，不报告可在线安装。只在发布流程完成后启用远程步骤；本地验证可使用同目录文件和下方离线参数。
 
@@ -10,17 +10,17 @@ Agent 先确认选中的项目根目录，使用已有用户权限，不改变�
 
 ## 固定下载与校验
 
-引导程序：https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev/voribot-bootstrap-0.0.9-dev-windows-amd64.exe
+引导程序：https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev.1/voribot-bootstrap-0.0.9-dev.1-windows-amd64.exe
 
-引导程序 SHA-256：e2615bd9a24b7e8946b359018bb475c17902079c7428c85151974fc2da944f67；长度：14932992 字节。
+引导程序 SHA-256：b00f932b10b68a2f3fb6ff1beb4a6faef1d49b54937c4e75d23b17ccb857ed4e；长度：14933504 字节。
 
-描述文件：https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev/bootstrap.json
+描述文件：https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev.1/bootstrap.json
 
-描述文件 SHA-256：3e49835ccef8fa92616c7dfda21d2fe58ff1c342dda3e40953c5514a8735aebe。
+描述文件 SHA-256：b6b62da15ea5b43ae2be0094a93dd3cc52cd02737b21dbe08fca0213b4e60740。
 
-ZIP：https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev/Voribot-0.0.9-dev-windows-amd64-ab72003388f2.zip
+ZIP：https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev.1/Voribot-0.0.9-dev.1-windows-amd64-61fe02c263e4.zip
 
-ZIP SHA-256：dc494597ac23b7906fb37a5a87fb3f4d2bc343dcdfbda37f68a1b82fb086ecaa。
+ZIP SHA-256：70d745abd9bfca0d1bd6e85169095d75c9f574ed069d570a05819a0a81a84688。
 
 摘要由本说明钉住，不能自动取任意同站 checksum 代替。摘要不等于发布者签名；安装入口及其摘要本身必须来自用户信任的发行说明。
 
@@ -31,7 +31,7 @@ $ErrorActionPreference = 'Stop'
 $vbProject = (Get-Location).Path # 应为用户选中的项目根目录
 $vbWork = Join-Path ([IO.Path]::GetTempPath()) ('voribot-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $vbWork | Out-Null
-$vbExe = Join-Path $vbWork 'voribot-bootstrap-0.0.9-dev-windows-amd64.exe'
+$vbExe = Join-Path $vbWork 'voribot-bootstrap-0.0.9-dev.1-windows-amd64.exe'
 Add-Type -AssemblyName System.Net.Http
 $vbHandler = [Net.Http.HttpClientHandler]::new()
 $vbHandler.AllowAutoRedirect = $false
@@ -40,9 +40,9 @@ $vbClient = [Net.Http.HttpClient]::new($vbHandler)
 $vbCancel = [Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds(90))
 $vbResponse = $null; $vbInput = $null; $vbOutput = $null
 try {
-    $vbResponse = $vbClient.GetAsync('https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev/voribot-bootstrap-0.0.9-dev-windows-amd64.exe', [Net.Http.HttpCompletionOption]::ResponseHeadersRead, $vbCancel.Token).GetAwaiter().GetResult()
+    $vbResponse = $vbClient.GetAsync('https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev.1/voribot-bootstrap-0.0.9-dev.1-windows-amd64.exe', [Net.Http.HttpCompletionOption]::ResponseHeadersRead, $vbCancel.Token).GetAwaiter().GetResult()
     if ([int]$vbResponse.StatusCode -eq 302) {
-        $vbOrigin = [Uri]'https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev/voribot-bootstrap-0.0.9-dev-windows-amd64.exe'
+        $vbOrigin = [Uri]'https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev.1/voribot-bootstrap-0.0.9-dev.1-windows-amd64.exe'
         $vbDestination = $vbResponse.Headers.Location
         if ($vbOrigin.Host -cne 'github.com' -or $null -eq $vbDestination -or -not $vbDestination.IsAbsoluteUri -or $vbDestination.OriginalString -cnotmatch '^https://release-assets\.githubusercontent\.com/' -or $vbDestination.UserInfo -or $vbDestination.Fragment -or $vbDestination.Query.Length -gt 16384 -or $vbDestination.AbsolutePath -notmatch '^/github-production-release-asset/[0-9]+/[A-Za-z0-9_-]+$') { throw '发行资源跳转超出已批准的 GitHub CDN 范围，停止下载。' }
         $vbResponse.Dispose(); $vbResponse = $null
@@ -55,20 +55,24 @@ try {
     $vbTotal = 0L
     while (($vbCount = $vbInput.ReadAsync($vbBuffer,0,$vbBuffer.Length,$vbCancel.Token).GetAwaiter().GetResult()) -gt 0) {
         $vbTotal += $vbCount
-        if ($vbTotal -gt 14932992) { throw '下载长度超限' }
+        if ($vbTotal -gt 14933504) { throw '下载长度超限' }
         $vbOutput.Write($vbBuffer,0,$vbCount)
     }
-    if ($vbTotal -ne 14932992) { throw '下载长度不符' }
+    if ($vbTotal -ne 14933504) { throw '下载长度不符' }
 } finally {
     if ($vbOutput) { $vbOutput.Dispose() }; if ($vbInput) { $vbInput.Dispose() }
     if ($vbResponse) { $vbResponse.Dispose() }; $vbClient.Dispose(); $vbCancel.Dispose()
 }
-if ((Get-FileHash -LiteralPath $vbExe -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'e2615bd9a24b7e8946b359018bb475c17902079c7428c85151974fc2da944f67') { throw '引导程序摘要不符，停止安装' }
-& $vbExe --descriptor 'https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev/bootstrap.json' --descriptor-sha256 '3e49835ccef8fa92616c7dfda21d2fe58ff1c342dda3e40953c5514a8735aebe' --project $vbProject --host codex
+$vbHashInput = [IO.File]::OpenRead($vbExe)
+$vbHasher = [Security.Cryptography.SHA256]::Create()
+try { $vbDigest = [BitConverter]::ToString($vbHasher.ComputeHash($vbHashInput)).Replace('-','').ToLowerInvariant() }
+finally { $vbHashInput.Dispose(); $vbHasher.Dispose() }
+if ($vbDigest -ne 'b00f932b10b68a2f3fb6ff1beb4a6faef1d49b54937c4e75d23b17ccb857ed4e') { throw '引导程序摘要不符，停止安装' }
+& $vbExe --descriptor 'https://github.com/vip135/Voribot-Releases/releases/download/v0.0.9-dev.1/bootstrap.json' --descriptor-sha256 'b6b62da15ea5b43ae2be0094a93dd3cc52cd02737b21dbe08fca0213b4e60740' --project $vbProject --host codex
 if ($LASTEXITCODE -ne 0) { throw '安装未完成，请依据 phase/错误和事务 ID 处理，不要报告成功' }
 ```
 
-离线：先按上面记录核对本地引导 EXE 和 ZIP 的摘要，再运行 `& <本地引导EXE> --descriptor <本地bootstrap.json> --descriptor-sha256 3e49835ccef8fa92616c7dfda21d2fe58ff1c342dda3e40953c5514a8735aebe --package <本地ZIP> --project <项目绝对路径> --host codex`。可加 `--install-root <目录>`、`--config <原生配置文件>`；`--dry-run` 不安装/初始化/写宿主，在线预览只获取钉住的描述文件。
+离线：先按上面记录核对本地引导 EXE 和 ZIP 的摘要，再运行 `& <本地引导EXE> --descriptor <本地bootstrap.json> --descriptor-sha256 b6b62da15ea5b43ae2be0094a93dd3cc52cd02737b21dbe08fca0213b4e60740 --package <本地ZIP> --project <项目绝对路径> --host codex`。可加 `--install-root <目录>`、`--config <原生配置文件>`；`--dry-run` 不安装/初始化/写宿主，在线预览只获取钉住的描述文件。
 
 程序返回安装/初始化/宿主绑定各阶段、固定入口、项目身份、自检及备份/事务 ID。失败可能保留已验证安装或已初始化项目，按 phase 重入处理，不删除用户目录。已有不同版本须显式 upgrade，已有外来条目或后续编辑保留，不强行覆盖。不自动重试下载或模型调用。私有仓库、登录页和不在白名单内的重定向会拒绝，用户可审阅后提供离线包；这不等于 GitHub 全链路已验收。
 
